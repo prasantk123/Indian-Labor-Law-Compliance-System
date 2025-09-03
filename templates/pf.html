@@ -5,14 +5,15 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8 mx-auto">
-        <h2>Provident Fund Calculator</h2>
-        <p class="text-muted">Calculate PF contributions as per Employees' Provident Funds Act, 1952</p>
+        <h2>{{ 'GPF Calculator' if sector == 'government' else 'Provident Fund Calculator' }}</h2>
+        <p class="text-muted">Calculate {{ 'GPF contributions for government employees' if sector == 'government' else 'PF contributions as per Employees\' Provident Funds Act, 1952' }}</p>
         
         <div class="card">
             <div class="card-body">
                 <form method="POST">
+                    <input type="hidden" name="sector" value="{{ sector }}">
                     <div class="mb-3">
-                        <label for="basic" class="form-label">Basic Salary *</label>
+                        <label for="basic" class="form-label">{{ 'Basic Pay' if sector == 'government' else 'Basic Salary' }} *</label>
                         <input type="number" class="form-control" id="basic" name="basic" 
                                value="{{ basic or '' }}" required step="0.01" min="0">
                     </div>
@@ -24,7 +25,7 @@
                         <div class="form-text">Optional - leave blank if not applicable</div>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary">Calculate PF</button>
+                    <button type="submit" class="btn {{ 'btn-success' if sector == 'government' else 'btn-primary' }}">Calculate {{ 'GPF' if sector == 'government' else 'PF' }}</button>
                 </form>
             </div>
         </div>
@@ -36,8 +37,33 @@
         {% if result %}
         <div class="card result-card mt-3">
             <div class="card-body">
-                <h5 class="card-title">PF Calculation Result</h5>
+                <h5 class="card-title">{{ 'GPF' if sector == 'government' else 'PF' }} Calculation Result</h5>
                 
+                {% if sector == 'government' %}
+                <div class="alert alert-info">
+                    <h6>GPF Contribution Options</h6>
+                    <p>{{ result.note }}</p>
+                </div>
+                
+                <table class="table table-bordered">
+                    <tr>
+                        <td><strong>Basic Salary</strong></td>
+                        <td>₹{{ "{:,.2f}".format(result.basic_salary) }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Minimum GPF Contribution (6%)</strong></td>
+                        <td>₹{{ "{:,.2f}".format(result.min_gpf_contribution) }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Recommended Contribution (12%)</strong></td>
+                        <td>₹{{ "{:,.2f}".format(result.recommended_contribution) }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Maximum GPF Contribution (100%)</strong></td>
+                        <td>₹{{ "{:,.2f}".format(result.max_gpf_contribution) }}</td>
+                    </tr>
+                </table>
+                {% else %}
                 <div class="row">
                     <div class="col-md-6">
                         <div class="card">
@@ -85,9 +111,10 @@
                         </tr>
                     </table>
                 </div>
+                {% endif %}
                 
                 <div class="mt-3">
-                    <a href="/download/pf/pdf?basic={{ basic }}&da={{ da }}" class="btn btn-danger btn-sm">Download PDF Report</a>
+                    <a href="/download/{{ 'gpf' if sector == 'government' else 'pf' }}/pdf?basic={{ basic }}&da={{ da }}&sector={{ sector }}" class="btn btn-danger btn-sm">Download PDF Report</a>
                 </div>
             </div>
         </div>
@@ -95,14 +122,28 @@
         
         <div class="card mt-3">
             <div class="card-body">
-                <h6>About PF</h6>
+                <h6>About {{ 'GPF' if sector == 'government' else 'PF' }}</h6>
+                {% if sector == 'government' %}
+                <ul class="small">
+                    <li>GPF is voluntary for government employees</li>
+                    <li>Minimum contribution: 6% of basic pay</li>
+                    <li>Maximum contribution: Up to full basic pay</li>
+                    <li>Interest rate declared annually by government</li>
+                    <li>Tax benefits under Section 80C</li>
+                </ul>
+                {% else %}
                 <ul class="small">
                     <li>PF is calculated on Basic + DA, capped at ₹15,000</li>
                     <li>Employee contributes 12% to EPF</li>
                     <li>Employer contributes 12%: 8.33% to EPS + 3.67% to EPF</li>
                     <li>Applicable to establishments with 20 or more employees</li>
                 </ul>
+                {% endif %}
             </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/{{ sector }}" class="btn btn-secondary">← Back to {{ 'Government' if sector == 'government' else 'Private' }} Calculators</a>
         </div>
     </div>
 </div>

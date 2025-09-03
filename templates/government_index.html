@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="text-center mb-4">Government Sector Calculators</h1>
+        <p class="lead text-center">Calculate benefits as per Central/State Government Rules</p>
+        <p class="text-center text-muted">A useful utility developed by <strong>Prasant Kumar</strong></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Gratuity Calculator</h5>
+                <p class="card-text">Calculate gratuity as per CCS (Pension) Rules</p>
+                <a href="/gratuity?sector=government" class="btn btn-success">Calculate Gratuity</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">GPF Calculator</h5>
+                <p class="card-text">Calculate General Provident Fund contributions</p>
+                <a href="/pf?sector=government" class="btn btn-success">Calculate GPF</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">NPS Calculator</h5>
+                <p class="card-text">Calculate New Pension Scheme contributions</p>
+                <a href="/nps" class="btn btn-success">Calculate NPS</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Leave Calculator</h5>
+                <p class="card-text">Calculate leave entitlements as per CCS (Leave) Rules</p>
+                <a href="/leave?sector=government" class="btn btn-success">Calculate Leave</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Holiday Calendar</h5>
+                <p class="card-text">View government holidays for 2025 (Central & Assam)</p>
+                <a href="/holidays" class="btn btn-success">View Calendar</a>
+            </div>
+        </div>
+    </div>
+    
+
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Government Employee Benefits Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Pre-2004 Recruits:</h6>
+                        <ul>
+                            <li>General Provident Fund (GPF)</li>
+                            <li>Defined Benefit Pension</li>
+                            <li>Gratuity (No maximum limit)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Post-2004 Recruits:</h6>
+                        <ul>
+                            <li>New Pension Scheme (NPS)</li>
+                            <li>Market-linked returns</li>
+                            <li>Gratuity (No maximum limit)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12 text-center">
+        <a href="/" class="btn btn-secondary">← Back to Sector Selection</a>
+    </div>
+</div>
+{% endblock %}

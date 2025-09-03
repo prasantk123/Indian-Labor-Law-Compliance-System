@@ -3,23 +3,28 @@ Indian Labor Law Compliance System - Core Calculators
 Handles Gratuity, PF, ESI, and Leave calculations as per Indian labor laws
 """
 
-def calculate_gratuity(last_drawn_salary, years_of_service, is_covered_establishment=True):
+def calculate_gratuity(last_drawn_salary, years_of_service, sector='private', is_covered_establishment=True):
     """
-    Calculate gratuity as per Payment of Gratuity Act, 1972
+    Calculate gratuity as per Payment of Gratuity Act, 1972 (Private) or CCS Rules (Government)
     
     Args:
         last_drawn_salary: Last drawn basic + DA salary
-        years_of_service: Total years of service (minimum 5 years required)
+        years_of_service: Total years of service
+        sector: 'private' or 'government'
         is_covered_establishment: True for establishments covered under the Act
     
     Returns:
         dict: Contains gratuity amount and eligibility status
     """
+    if sector == 'government':
+        return calculate_government_gratuity(last_drawn_salary, years_of_service)
+    
     if years_of_service < 5:
         return {
             'eligible': False,
             'gratuity_amount': 0,
-            'reason': 'Minimum 5 years of service required'
+            'reason': 'Minimum 5 years of service required',
+            'sector': 'private'
         }
     
     # Formula: (Last Drawn Salary / 26) * 15 * Years of Service
@@ -33,22 +38,57 @@ def calculate_gratuity(last_drawn_salary, years_of_service, is_covered_establish
     return {
         'eligible': True,
         'gratuity_amount': round(gratuity_amount, 2),
-        'capped_at_maximum': gratuity_amount == max_gratuity
+        'capped_at_maximum': gratuity_amount == max_gratuity,
+        'sector': 'private'
     }
 
-def calculate_pf_contribution(basic_salary, da=0, employee_contribution_rate=12, employer_contribution_rate=12):
+def calculate_government_gratuity(last_drawn_salary, years_of_service):
     """
-    Calculate PF contribution as per Employees' Provident Funds Act, 1952
+    Calculate gratuity for government employees as per CCS (Pension) Rules
+    
+    Args:
+        last_drawn_salary: Last drawn basic pay
+        years_of_service: Total qualifying service
+    
+    Returns:
+        dict: Government gratuity calculation
+    """
+    if years_of_service < 10:
+        return {
+            'eligible': False,
+            'gratuity_amount': 0,
+            'reason': 'Minimum 10 years of qualifying service required for government employees',
+            'sector': 'government'
+        }
+    
+    # Government gratuity formula: (Basic Pay * Years of Service * 15) / 26
+    # No maximum limit for government employees
+    gratuity_amount = (last_drawn_salary * years_of_service * 15) / 26
+    
+    return {
+        'eligible': True,
+        'gratuity_amount': round(gratuity_amount, 2),
+        'sector': 'government',
+        'note': 'No maximum limit for government employees'
+    }
+
+def calculate_pf_contribution(basic_salary, da=0, sector='private', employee_contribution_rate=12, employer_contribution_rate=12):
+    """
+    Calculate PF/GPF contribution as per applicable rules
     
     Args:
         basic_salary: Basic salary
         da: Dearness allowance
+        sector: 'private' or 'government'
         employee_contribution_rate: Employee contribution percentage (default 12%)
         employer_contribution_rate: Employer contribution percentage (default 12%)
     
     Returns:
-        dict: PF contribution details
+        dict: PF/GPF contribution details
     """
+    if sector == 'government':
+        return calculate_government_gpf(basic_salary, da)
+    
     # PF is calculated on Basic + DA, capped at Rs. 15,000
     pf_eligible_salary = min(basic_salary + da, 15000)
     
@@ -65,7 +105,60 @@ def calculate_pf_contribution(basic_salary, da=0, employee_contribution_rate=12,
         'employer_epf_contribution': round(epf_contribution, 2),
         'employer_eps_contribution': round(eps_contribution, 2),
         'total_employer_contribution': round(employer_contribution, 2),
-        'total_monthly_pf': round(employee_contribution + employer_contribution, 2)
+        'total_monthly_pf': round(employee_contribution + employer_contribution, 2),
+        'sector': 'private'
+    }
+
+def calculate_government_gpf(basic_salary, da=0):
+    """
+    Calculate GPF for government employees
+    
+    Args:
+        basic_salary: Basic pay
+        da: Dearness allowance
+    
+    Returns:
+        dict: GPF contribution details
+    """
+    # GPF: Minimum 6% of basic pay, can contribute up to full basic pay
+    min_contribution = (basic_salary * 6) / 100
+    max_contribution = basic_salary
+    
+    return {
+        'basic_salary': basic_salary,
+        'min_gpf_contribution': round(min_contribution, 2),
+        'max_gpf_contribution': round(max_contribution, 2),
+        'recommended_contribution': round((basic_salary * 12) / 100, 2),
+        'sector': 'government',
+        'note': 'GPF contribution is voluntary, minimum 6% of basic pay'
+    }
+
+def calculate_nps_contribution(basic_salary, da=0, employee_rate=10, employer_rate=14):
+    """
+    Calculate NPS contribution for government employees (post-2004 recruits)
+    
+    Args:
+        basic_salary: Basic pay
+        da: Dearness allowance
+        employee_rate: Employee contribution rate (default 10%)
+        employer_rate: Government contribution rate (default 14%)
+    
+    Returns:
+        dict: NPS contribution details
+    """
+    nps_eligible_salary = basic_salary + da
+    
+    employee_contribution = (nps_eligible_salary * employee_rate) / 100
+    employer_contribution = (nps_eligible_salary * employer_rate) / 100
+    
+    return {
+        'nps_eligible_salary': nps_eligible_salary,
+        'employee_contribution': round(employee_contribution, 2),
+        'employer_contribution': round(employer_contribution, 2),
+        'total_contribution': round(employee_contribution + employer_contribution, 2),
+        'employee_rate': employee_rate,
+        'employer_rate': employer_rate,
+        'sector': 'government'
     }
 
 def is_esi_applicable(monthly_salary, state='general'):
@@ -104,19 +197,21 @@ def is_esi_applicable(monthly_salary, state='general'):
         'total_contribution': round(employee_contribution + employer_contribution, 2)
     }
 
-def calculate_leave_entitlement(days_worked_in_year, state='general', establishment_type='factory'):
+def calculate_leave_entitlement(days_worked_in_year, state='general', establishment_type='factory', sector='private'):
     """
-    Calculate leave entitlement as per Factories Act and state laws
+    Calculate leave entitlement as per applicable laws
     
     Args:
         days_worked_in_year: Number of days worked in the year
         state: State (different states may have variations)
         establishment_type: Type of establishment (factory, shop, etc.)
+        sector: 'private' or 'government'
     
     Returns:
         dict: Leave entitlement details
     """
-    leave_entitlements = {}
+    if sector == 'government':
+        return calculate_government_leave_entitlement()
     
     # Earned Leave (Annual Leave) - Factories Act: 1 day for every 20 days worked
     if establishment_type.lower() == 'factory':
@@ -145,7 +240,28 @@ def calculate_leave_entitlement(days_worked_in_year, state='general', establishm
         'sick_leave': sick_leave,
         'total_annual_leave': earned_leave + casual_leave + sick_leave,
         'establishment_type': establishment_type,
-        'state': state
+        'state': state,
+        'sector': 'private'
+    }
+
+def calculate_government_leave_entitlement():
+    """
+    Calculate leave entitlement for government employees as per CCS (Leave) Rules
+    
+    Returns:
+        dict: Government leave entitlement details
+    """
+    return {
+        'earned_leave': 30,  # 30 days per year
+        'casual_leave': 8,   # 8 days per year
+        'sick_leave': 20,    # 20 days per year (half pay leave)
+        'maternity_leave': 180,  # 180 days
+        'paternity_leave': 15,   # 15 days
+        'child_care_leave': 730, # 2 years during entire service
+        'study_leave': 'As per rules',
+        'total_annual_leave': 58,  # Earned + Casual + Sick
+        'sector': 'government',
+        'note': 'As per CCS (Leave) Rules, 1972'
     }
 
 def generate_compliance_checklist(state, num_employees, industry_type):

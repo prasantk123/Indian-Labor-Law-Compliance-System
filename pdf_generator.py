@@ -43,6 +43,10 @@ def generate_calculation_report(calc_type, data, result):
         story.extend(_generate_gratuity_content(data, result, styles))
     elif calc_type == 'pf':
         story.extend(_generate_pf_content(data, result, styles))
+    elif calc_type == 'gpf':
+        story.extend(_generate_gpf_content(data, result, styles))
+    elif calc_type == 'nps':
+        story.extend(_generate_nps_content(data, result, styles))
     elif calc_type == 'esi':
         story.extend(_generate_esi_content(data, result, styles))
     elif calc_type == 'leave':
@@ -63,14 +67,18 @@ def generate_calculation_report(calc_type, data, result):
 def _generate_gratuity_content(data, result, styles):
     content = []
     
-    content.append(Paragraph("Gratuity Calculation Report", styles['Heading2']))
+    sector = result.get('sector', 'private')
+    title = f"{'Government' if sector == 'government' else 'Private Sector'} Gratuity Calculation Report"
+    content.append(Paragraph(title, styles['Heading2']))
     content.append(Spacer(1, 12))
     
     # Input data
+    salary_label = 'Last Drawn Basic Pay' if sector == 'government' else 'Last Drawn Salary (Basic + DA)'
     input_data = [
         ['Parameter', 'Value'],
-        ['Last Drawn Salary (Basic + DA)', f"{data['salary']:,.2f}"],
-        ['Years of Service', f"{data['years']} years"]
+        [salary_label, f"₹{data['salary']:,.2f}"],
+        ['Years of Service', f"{data['years']} years"],
+        ['Sector', sector.title()]
     ]
     
     input_table = Table(input_data, colWidths=[3*inch, 2*inch])
@@ -86,18 +94,26 @@ def _generate_gratuity_content(data, result, styles):
     
     # Results
     if result['eligible']:
+        if sector == 'government':
+            formula = f"({data['salary']:,.2f} × {data['years']} × 15) ÷ 26"
+        else:
+            formula = f"({data['salary']:,.2f} ÷ 26) × 15 × {data['years']}"
+            
         result_data = [
             ['Calculation Result', 'Amount'],
-            ['Gratuity Amount', f"{result['gratuity_amount']:,.2f}"],
+            ['Gratuity Amount', f"₹{result['gratuity_amount']:,.2f}"],
             ['Status', 'Eligible'],
-            ['Formula Used', f"({data['salary']:,.2f} ÷ 26) × 15 × {data['years']}"]
+            ['Formula Used', formula]
         ]
+        
         if result.get('capped_at_maximum'):
-            result_data.append(['Note', 'Amount capped at maximum 20,00,000'])
+            result_data.append(['Note', 'Amount capped at maximum ₹20,00,000'])
+        elif sector == 'government':
+            result_data.append(['Note', result.get('note', 'No maximum limit for government employees')])
     else:
         result_data = [
             ['Calculation Result', 'Status'],
-            ['Gratuity Amount', '0.00'],
+            ['Gratuity Amount', '₹0.00'],
             ['Status', 'Not Eligible'],
             ['Reason', result['reason']]
         ]
@@ -122,9 +138,9 @@ def _generate_pf_content(data, result, styles):
     # Input data
     input_data = [
         ['Parameter', 'Value'],
-        ['Basic Salary', f"{data['basic']:,.2f}"],
-        ['Dearness Allowance', f"{data.get('da', 0):,.2f}"],
-        ['PF Eligible Salary', f"{result['pf_eligible_salary']:,.2f}"]
+        ['Basic Salary', f"₹{data['basic']:,.2f}"],
+        ['Dearness Allowance', f"₹{data.get('da', 0):,.2f}"],
+        ['PF Eligible Salary', f"₹{result['pf_eligible_salary']:,.2f}"]
     ]
     
     input_table = Table(input_data, colWidths=[3*inch, 2*inch])
@@ -141,10 +157,10 @@ def _generate_pf_content(data, result, styles):
     # Results
     result_data = [
         ['Contribution Type', 'Amount', 'Rate'],
-        ['Employee EPF', f"{result['employee_contribution']:,.2f}", '12%'],
-        ['Employer EPF', f"{result['employer_epf_contribution']:,.2f}", '3.67%'],
-        ['Employer EPS', f"{result['employer_eps_contribution']:,.2f}", '8.33%'],
-        ['Total Monthly PF', f"{result['total_monthly_pf']:,.2f}", '24%']
+        ['Employee EPF', f"₹{result['employee_contribution']:,.2f}", '12%'],
+        ['Employer EPF', f"₹{result['employer_epf_contribution']:,.2f}", '3.67%'],
+        ['Employer EPS', f"₹{result['employer_eps_contribution']:,.2f}", '8.33%'],
+        ['Total Monthly PF', f"₹{result['total_monthly_pf']:,.2f}", '24%']
     ]
     
     result_table = Table(result_data, colWidths=[2.5*inch, 1.5*inch, 1*inch])
@@ -155,6 +171,105 @@ def _generate_pf_content(data, result, styles):
         ('GRID', (0,0), (-1,-1), 1, colors.black)
     ]))
     content.append(result_table)
+    
+    return content
+
+def _generate_gpf_content(data, result, styles):
+    content = []
+    
+    content.append(Paragraph("General Provident Fund (GPF) Report", styles['Heading2']))
+    content.append(Spacer(1, 12))
+    
+    # Input data
+    input_data = [
+        ['Parameter', 'Value'],
+        ['Basic Pay', f"₹{data['basic']:,.2f}"],
+        ['Dearness Allowance', f"₹{data.get('da', 0):,.2f}"],
+        ['Sector', 'Government']
+    ]
+    
+    input_table = Table(input_data, colWidths=[3*inch, 2*inch])
+    input_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+        ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 12),
+        ('GRID', (0,0), (-1,-1), 1, colors.black)
+    ]))
+    content.append(input_table)
+    content.append(Spacer(1, 20))
+    
+    # Results
+    result_data = [
+        ['GPF Contribution Options', 'Amount', 'Rate'],
+        ['Minimum Contribution', f"₹{result['min_gpf_contribution']:,.2f}", '6%'],
+        ['Recommended Contribution', f"₹{result['recommended_contribution']:,.2f}", '12%'],
+        ['Maximum Contribution', f"₹{result['max_gpf_contribution']:,.2f}", '100%']
+    ]
+    
+    result_table = Table(result_data, colWidths=[2.5*inch, 1.5*inch, 1*inch])
+    result_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.lightgreen),
+        ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+        ('FONTSIZE', (0,0), (-1,-1), 11),
+        ('GRID', (0,0), (-1,-1), 1, colors.black)
+    ]))
+    content.append(result_table)
+    
+    # Note
+    content.append(Spacer(1, 12))
+    note_text = f"Note: {result.get('note', 'GPF contribution is voluntary for government employees')}"
+    content.append(Paragraph(note_text, styles['Normal']))
+    
+    return content
+
+def _generate_nps_content(data, result, styles):
+    content = []
+    
+    content.append(Paragraph("New Pension Scheme (NPS) Report", styles['Heading2']))
+    content.append(Spacer(1, 12))
+    
+    # Input data
+    input_data = [
+        ['Parameter', 'Value'],
+        ['Basic Pay', f"₹{data['basic']:,.2f}"],
+        ['Dearness Allowance', f"₹{data.get('da', 0):,.2f}"],
+        ['NPS Eligible Salary', f"₹{result['nps_eligible_salary']:,.2f}"],
+        ['Employee Contribution Rate', f"{data.get('employee_rate', 10)}%"]
+    ]
+    
+    input_table = Table(input_data, colWidths=[3*inch, 2*inch])
+    input_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+        ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 12),
+        ('GRID', (0,0), (-1,-1), 1, colors.black)
+    ]))
+    content.append(input_table)
+    content.append(Spacer(1, 20))
+    
+    # Results
+    result_data = [
+        ['NPS Contribution', 'Amount', 'Rate'],
+        ['Employee Contribution', f"₹{result['employee_contribution']:,.2f}", f"{result['employee_rate']}%"],
+        ['Government Contribution', f"₹{result['employer_contribution']:,.2f}", f"{result['employer_rate']}%"],
+        ['Total Monthly NPS', f"₹{result['total_contribution']:,.2f}", f"{result['employee_rate'] + result['employer_rate']}%"]
+    ]
+    
+    result_table = Table(result_data, colWidths=[2.5*inch, 1.5*inch, 1*inch])
+    result_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.lightcoral),
+        ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+        ('FONTSIZE', (0,0), (-1,-1), 11),
+        ('GRID', (0,0), (-1,-1), 1, colors.black)
+    ]))
+    content.append(result_table)
+    
+    # Note
+    content.append(Spacer(1, 12))
+    note_text = "Note: NPS is applicable for government employees recruited on or after 1st January 2004. The scheme provides market-linked returns."
+    content.append(Paragraph(note_text, styles['Normal']))
     
     return content
 
@@ -212,16 +327,26 @@ def _generate_esi_content(data, result, styles):
 def _generate_leave_content(data, result, styles):
     content = []
     
-    content.append(Paragraph("Leave Entitlement Report", styles['Heading2']))
+    sector = result.get('sector', 'private')
+    title = f"{'Government' if sector == 'government' else 'Private Sector'} Leave Entitlement Report"
+    content.append(Paragraph(title, styles['Heading2']))
     content.append(Spacer(1, 12))
     
     # Input data
-    input_data = [
-        ['Parameter', 'Value'],
-        ['Days Worked in Year', f"{data['days_worked']} days"],
-        ['State', data.get('state', 'General').title()],
-        ['Establishment Type', data.get('establishment_type', 'Factory').title()]
-    ]
+    if sector == 'government':
+        input_data = [
+            ['Parameter', 'Value'],
+            ['Sector', 'Government'],
+            ['Rules', 'CCS (Leave) Rules, 1972']
+        ]
+    else:
+        input_data = [
+            ['Parameter', 'Value'],
+            ['Days Worked in Year', f"{data['days_worked']} days"],
+            ['State', data.get('state', 'General').title()],
+            ['Establishment Type', data.get('establishment_type', 'Factory').title()],
+            ['Sector', 'Private']
+        ]
     
     input_table = Table(input_data, colWidths=[3*inch, 2*inch])
     input_table.setStyle(TableStyle([
@@ -236,12 +361,26 @@ def _generate_leave_content(data, result, styles):
     
     # Results
     result_data = [
-        ['Leave Type', 'Days Entitled'],
-        ['Earned Leave', f"{result['earned_leave']} days"],
-        ['Casual Leave', f"{result['casual_leave']} days"],
-        ['Sick Leave', f"{result['sick_leave']} days"],
-        ['Total Annual Leave', f"{result['total_annual_leave']} days"]
+        ['Leave Type', 'Days Entitled']
     ]
+    
+    if sector == 'government':
+        result_data.extend([
+            ['Earned Leave', f"{result['earned_leave']} days per year"],
+            ['Casual Leave', f"{result['casual_leave']} days per year"],
+            ['Half Pay Leave', f"{result['sick_leave']} days per year"],
+            ['Maternity Leave', f"{result['maternity_leave']} days"],
+            ['Paternity Leave', f"{result['paternity_leave']} days"],
+            ['Child Care Leave', f"{result['child_care_leave']} days (entire service)"],
+            ['Total Annual Leave', f"{result['total_annual_leave']} days"]
+        ])
+    else:
+        result_data.extend([
+            ['Earned Leave', f"{result['earned_leave']} days"],
+            ['Casual Leave', f"{result['casual_leave']} days"],
+            ['Sick Leave', f"{result['sick_leave']} days"],
+            ['Total Annual Leave', f"{result['total_annual_leave']} days"]
+        ])
     
     result_table = Table(result_data, colWidths=[3*inch, 2*inch])
     result_table.setStyle(TableStyle([
@@ -251,6 +390,12 @@ def _generate_leave_content(data, result, styles):
         ('GRID', (0,0), (-1,-1), 1, colors.black)
     ]))
     content.append(result_table)
+    
+    # Add note for government employees
+    if sector == 'government':
+        content.append(Spacer(1, 12))
+        note_text = result.get('note', 'As per CCS (Leave) Rules, 1972')
+        content.append(Paragraph(f"Note: {note_text}", styles['Normal']))
     
     return content
 

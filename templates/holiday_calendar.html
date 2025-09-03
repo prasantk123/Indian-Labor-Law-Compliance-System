@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="text-center mb-4">Government Holiday Calendar 2025</h2>
+        <p class="text-center text-muted">Official holidays for Central Government and Assam State employees</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 offset-md-3">
+        <form method="GET" class="d-flex">
+            <select name="state" class="form-select me-2" onchange="this.form.submit()">
+                <option value="central" {{ 'selected' if state == 'central' }}>Central Government</option>
+                <option value="assam" {{ 'selected' if state == 'assam' }}>Assam State</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+{% if working_days %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Working Days Summary 2025</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h4 class="text-primary">{{ working_days.total_days }}</h4>
+                        <small>Total Days</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-danger">{{ working_days.holidays }}</h4>
+                        <small>Holidays</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-warning">{{ working_days.sundays }}</h4>
+                        <small>Sundays</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-success">{{ working_days.working_days }}</h4>
+                        <small>Working Days</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    {% for month, holidays in months.items() %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">{{ month }} 2025</h6>
+            </div>
+            <div class="card-body p-2">
+                {% if holidays %}
+                    {% for holiday in holidays %}
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 
+                         {% if holiday.type == 'Gazetted' %}bg-light{% elif holiday.type == 'State' %}bg-success bg-opacity-10{% else %}bg-warning bg-opacity-10{% endif %} rounded">
+                        <div>
+                            <strong>{{ holiday.date }}</strong> ({{ holiday.day[:3] }})<br>
+                            <small>{{ holiday.name }}</small>
+                        </div>
+                        <span class="badge 
+                             {% if holiday.type == 'Gazetted' %}bg-primary{% elif holiday.type == 'State' %}bg-success{% else %}bg-warning{% endif %}">
+                            {{ holiday.type }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">No holidays</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h6>Holiday Types</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <span class="badge bg-primary me-2">Gazetted</span>
+                        <small>Compulsory holidays for all government employees</small>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="badge bg-warning me-2">Restricted</span>
+                        <small>Employees can choose any 2 from the list</small>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="badge bg-success me-2">State</span>
+                        <small>Assam-specific regional holidays</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <a href="/government" class="btn btn-secondary">← Back to Government Calculators</a>
+</div>
+{% endblock %}

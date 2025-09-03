@@ -5,12 +5,14 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8 mx-auto">
-        <h2>Leave Entitlement Calculator</h2>
-        <p class="text-muted">Calculate leave entitlements as per Indian labor laws</p>
+        <h2>{{ 'Government' if sector == 'government' else 'Private Sector' }} Leave Calculator</h2>
+        <p class="text-muted">Calculate leave entitlements as per {{ 'CCS (Leave) Rules' if sector == 'government' else 'Indian labor laws' }}</p>
         
         <div class="card">
             <div class="card-body">
                 <form method="POST">
+                    <input type="hidden" name="sector" value="{{ sector }}">
+                    {% if sector != 'government' %}
                     <div class="mb-3">
                         <label for="days_worked" class="form-label">Days Worked in Year *</label>
                         <input type="number" class="form-control" id="days_worked" name="days_worked" 
@@ -36,8 +38,14 @@
                             <option value="office" {{ 'selected' if establishment_type == 'office' }}>Office</option>
                         </select>
                     </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <strong>Government Employee Leave Entitlements</strong><br>
+                        Leave entitlements for government employees are standardized as per CCS (Leave) Rules, 1972.
+                    </div>
+                    {% endif %}
                     
-                    <button type="submit" class="btn btn-primary">Calculate Leave</button>
+                    <button type="submit" class="btn {{ 'btn-success' if sector == 'government' else 'btn-primary' }}">{{ 'View Leave Entitlements' if sector == 'government' else 'Calculate Leave' }}</button>
                 </form>
             </div>
         </div>
@@ -50,7 +58,7 @@
         <div class="card result-card mt-3">
             <div class="card-body">
                 <h5 class="card-title">Leave Entitlement Result</h5>
-                <p class="text-muted">For {{ result.establishment_type }} in {{ result.state }}</p>
+                <p class="text-muted">{{ result.note if sector == 'government' else 'For ' + result.establishment_type + ' in ' + result.state }}</p>
                 
                 <div class="row">
                     <div class="col-md-3">
@@ -58,7 +66,7 @@
                             <div class="card-body">
                                 <h4 class="text-primary">{{ result.earned_leave }}</h4>
                                 <h6 class="card-title">Earned Leave</h6>
-                                <small class="text-muted">Annual Leave</small>
+                                <small class="text-muted">{{ 'Annual Leave' if sector != 'government' else 'Per Year' }}</small>
                             </div>
                         </div>
                     </div>
@@ -77,7 +85,7 @@
                         <div class="card text-center">
                             <div class="card-body">
                                 <h4 class="text-info">{{ result.sick_leave }}</h4>
-                                <h6 class="card-title">Sick Leave</h6>
+                                <h6 class="card-title">{{ 'Sick Leave' if sector != 'government' else 'Half Pay Leave' }}</h6>
                                 <small class="text-muted">Per Year</small>
                             </div>
                         </div>
@@ -94,6 +102,29 @@
                     </div>
                 </div>
                 
+                {% if sector == 'government' %}
+                <div class="mt-3">
+                    <h6>Additional Government Leave Types:</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Maternity Leave</td>
+                            <td class="text-end">{{ result.maternity_leave }} days</td>
+                        </tr>
+                        <tr>
+                            <td>Paternity Leave</td>
+                            <td class="text-end">{{ result.paternity_leave }} days</td>
+                        </tr>
+                        <tr>
+                            <td>Child Care Leave</td>
+                            <td class="text-end">{{ result.child_care_leave }} days (during entire service)</td>
+                        </tr>
+                        <tr>
+                            <td>Study Leave</td>
+                            <td class="text-end">{{ result.study_leave }}</td>
+                        </tr>
+                    </table>
+                </div>
+                {% else %}
                 <div class="mt-3">
                     <h6>Calculation Details:</h6>
                     <table class="table table-sm">
@@ -119,9 +150,10 @@
                         </tr>
                     </table>
                 </div>
+                {% endif %}
                 
                 <div class="mt-3">
-                    <a href="/download/leave/pdf?days_worked={{ days_worked }}&state={{ state }}&establishment_type={{ establishment_type }}" class="btn btn-danger btn-sm">Download PDF Report</a>
+                    <a href="/download/leave/pdf?{{ 'sector=government' if sector == 'government' else 'days_worked=' + days_worked|string + '&state=' + state + '&establishment_type=' + establishment_type + '&sector=' + sector }}" class="btn btn-danger btn-sm">Download PDF Report</a>
                 </div>
             </div>
         </div>
@@ -129,14 +161,29 @@
         
         <div class="card mt-3">
             <div class="card-body">
-                <h6>Leave Rules</h6>
+                <h6>{{ 'Government' if sector == 'government' else 'Private Sector' }} Leave Rules</h6>
+                {% if sector == 'government' %}
+                <ul class="small">
+                    <li><strong>Earned Leave:</strong> 30 days per year (can be accumulated up to 300 days)</li>
+                    <li><strong>Casual Leave:</strong> 8 days per year (cannot be accumulated)</li>
+                    <li><strong>Half Pay Leave:</strong> 20 days per year (can be accumulated up to 120 days)</li>
+                    <li><strong>Maternity Leave:</strong> 180 days (can be combined with other leave)</li>
+                    <li><strong>Paternity Leave:</strong> 15 days within 6 months of child birth</li>
+                    <li>As per CCS (Leave) Rules, 1972</li>
+                </ul>
+                {% else %}
                 <ul class="small">
                     <li><strong>Earned Leave:</strong> 1 day for every 20 days worked (Factories Act)</li>
                     <li><strong>Casual Leave:</strong> Typically 7-12 days per year</li>
                     <li><strong>Sick Leave:</strong> Usually 7-12 days per year</li>
                     <li>Rules may vary by state and establishment type</li>
                 </ul>
+                {% endif %}
             </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/{{ sector }}" class="btn btn-secondary">← Back to {{ 'Government' if sector == 'government' else 'Private' }} Calculators</a>
         </div>
     </div>
 </div>

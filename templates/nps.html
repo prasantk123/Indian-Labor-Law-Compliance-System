@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="text-center mb-4">NPS Calculator</h2>
+        <p class="text-center text-muted">Calculate New Pension Scheme contributions for Government Employees</p>
+        
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="basic">Basic Pay (₹)</label>
+                <input type="number" class="form-control" id="basic" name="basic" 
+                       value="{{ basic or '' }}" required min="0" step="0.01">
+            </div>
+            
+            <div class="form-group">
+                <label for="da">Dearness Allowance (₹)</label>
+                <input type="number" class="form-control" id="da" name="da" 
+                       value="{{ da or 0 }}" min="0" step="0.01">
+                <small class="form-text text-muted">Enter 0 if not applicable</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="employee_rate">Employee Contribution Rate (%)</label>
+                <input type="number" class="form-control" id="employee_rate" name="employee_rate" 
+                       value="10" min="10" max="14" step="1">
+                <small class="form-text text-muted">Default: 10% (can be increased to 14%)</small>
+            </div>
+            
+            <button type="submit" class="btn btn-success btn-block">Calculate NPS</button>
+        </form>
+        
+        {% if result %}
+        <div class="card mt-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">NPS Calculation Result</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <td><strong>NPS Eligible Salary</strong></td>
+                        <td>₹{{ "{:,.2f}".format(result.nps_eligible_salary) }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Employee Contribution ({{ result.employee_rate }}%)</strong></td>
+                        <td>₹{{ "{:,.2f}".format(result.employee_contribution) }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Government Contribution ({{ result.employer_rate }}%)</strong></td>
+                        <td>₹{{ "{:,.2f}".format(result.employer_contribution) }}</td>
+                    </tr>
+                    <tr class="table-success">
+                        <td><strong>Total Monthly NPS Contribution</strong></td>
+                        <td><strong>₹{{ "{:,.2f}".format(result.total_contribution) }}</strong></td>
+                    </tr>
+                </table>
+                
+                <div class="alert alert-info">
+                    <strong>Note:</strong> NPS is applicable for government employees recruited on or after 1st January 2004. 
+                    The scheme provides market-linked returns and is managed by PFRDA.
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="/download/nps/pdf?basic={{ basic }}&da={{ da }}&employee_rate={{ result.employee_rate }}" 
+                       class="btn btn-primary">Download PDF Report</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6>About NPS (New Pension Scheme)</h6>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li><strong>Applicable to:</strong> Government employees recruited on or after 1st January 2004</li>
+                    <li><strong>Employee Contribution:</strong> Minimum 10% of Basic + DA (can be increased to 14%)</li>
+                    <li><strong>Government Contribution:</strong> 14% of Basic + DA</li>
+                    <li><strong>Returns:</strong> Market-linked, managed by professional fund managers</li>
+                    <li><strong>Withdrawal:</strong> 60% lump sum at retirement, 40% mandatory annuity</li>
+                    <li><strong>Tax Benefits:</strong> Eligible for tax deduction under Section 80C and 80CCD</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/government" class="btn btn-secondary">← Back to Government Calculators</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
