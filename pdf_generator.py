@@ -1,5 +1,5 @@
 """
-PDF Report Generator for Indian Labor Law Compliance System
+PDF Report Generator for StatutoryCalc
 """
 
 from reportlab.lib.pagesizes import letter, A4
@@ -20,14 +20,14 @@ def generate_calculation_report(calc_type, data, result):
     # Title
     title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], 
                                 fontSize=18, spaceAfter=30, alignment=1)
-    story.append(Paragraph("Indian Labor Law Compliance Report", title_style))
+    story.append(Paragraph("StatutoryCalc - Statutory Benefits Report", title_style))
     story.append(Spacer(1, 12))
     
     # Report info
     info_data = [
         ['Report Type:', calc_type.title() + ' Calculator'],
         ['Generated On:', datetime.now().strftime('%d %B %Y at %I:%M %p')],
-        ['System:', 'Indian Labor Law Compliance System'],
+        ['System:', 'StatutoryCalc'],
         ['Developer:', 'Prasant Kumar']
     ]
     info_table = Table(info_data, colWidths=[2*inch, 4*inch])
@@ -57,7 +57,7 @@ def generate_calculation_report(calc_type, data, result):
     footer_text = "This report is generated for informational purposes. Please consult legal experts for complete compliance."
     story.append(Paragraph(footer_text, styles['Normal']))
     story.append(Spacer(1, 10))
-    developer_text = "Developed by Prasant Kumar | Indian Labor Law Compliance System"
+    developer_text = "Developed by Prasant Kumar | StatutoryCalc"
     story.append(Paragraph(developer_text, styles['Normal']))
     
     doc.build(story)
@@ -455,7 +455,7 @@ def generate_compliance_report(state, num_employees, industry_type, checklist):
     footer_text = "This checklist is based on general compliance requirements. Specific requirements may vary. Please consult with legal experts for complete compliance guidance."
     story.append(Paragraph(footer_text, styles['Normal']))
     story.append(Spacer(1, 10))
-    developer_text = "Developed by Prasant Kumar | Indian Labor Law Compliance System"
+    developer_text = "Developed by Prasant Kumar | StatutoryCalc"
     story.append(Paragraph(developer_text, styles['Normal']))
     
     doc.build(story)

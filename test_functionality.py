@@ -64,7 +64,7 @@ def test_private_leave():
     print()
 
 if __name__ == "__main__":
-    print("Testing Indian Labor Law Compliance System - Government Sector Features")
+    print("Testing StatutoryCalc - Government Sector Features")
     print("=" * 70)
     
     test_government_gratuity()

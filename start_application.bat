@@ -1,5 +1,5 @@
 @echo off
-echo Starting Indian Labor Law Compliance System...
+echo Starting StatutoryCalc...
 echo.
 echo The application will be available at: http://localhost:5000
 echo.
