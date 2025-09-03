@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Leave Calculator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h2>Leave Entitlement Calculator</h2>
+        <p class="text-muted">Calculate leave entitlements as per Indian labor laws</p>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="days_worked" class="form-label">Days Worked in Year *</label>
+                        <input type="number" class="form-control" id="days_worked" name="days_worked" 
+                               value="{{ days_worked or '' }}" required min="1" max="365">
+                        <div class="form-text">Number of days actually worked in the year</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="state" class="form-label">State</label>
+                        <select class="form-select" id="state" name="state">
+                            <option value="general" {{ 'selected' if state == 'general' }}>General</option>
+                            <option value="maharashtra" {{ 'selected' if state == 'maharashtra' }}>Maharashtra</option>
+                            <option value="karnataka" {{ 'selected' if state == 'karnataka' }}>Karnataka</option>
+                            <option value="tamil nadu" {{ 'selected' if state == 'tamil nadu' }}>Tamil Nadu</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="establishment_type" class="form-label">Establishment Type</label>
+                        <select class="form-select" id="establishment_type" name="establishment_type">
+                            <option value="factory" {{ 'selected' if establishment_type == 'factory' }}>Factory</option>
+                            <option value="shop" {{ 'selected' if establishment_type == 'shop' }}>Shop/Commercial</option>
+                            <option value="office" {{ 'selected' if establishment_type == 'office' }}>Office</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Calculate Leave</button>
+                </form>
+            </div>
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-danger mt-3">{{ error }}</div>
+        {% endif %}
+        
+        {% if result %}
+        <div class="card result-card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Leave Entitlement Result</h5>
+                <p class="text-muted">For {{ result.establishment_type }} in {{ result.state }}</p>
+                
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h4 class="text-primary">{{ result.earned_leave }}</h4>
+                                <h6 class="card-title">Earned Leave</h6>
+                                <small class="text-muted">Annual Leave</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h4 class="text-success">{{ result.casual_leave }}</h4>
+                                <h6 class="card-title">Casual Leave</h6>
+                                <small class="text-muted">Per Year</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h4 class="text-info">{{ result.sick_leave }}</h4>
+                                <h6 class="card-title">Sick Leave</h6>
+                                <small class="text-muted">Per Year</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h4 class="text-warning">{{ result.total_annual_leave }}</h4>
+                                <h6 class="card-title">Total Leave</h6>
+                                <small class="text-muted">Per Year</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>Calculation Details:</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Days Worked in Year</td>
+                            <td class="text-end">{{ days_worked }} days</td>
+                        </tr>
+                        <tr>
+                            <td>Earned Leave (1 day per 20 days worked)</td>
+                            <td class="text-end">{{ result.earned_leave }} days</td>
+                        </tr>
+                        <tr>
+                            <td>Casual Leave</td>
+                            <td class="text-end">{{ result.casual_leave }} days</td>
+                        </tr>
+                        <tr>
+                            <td>Sick Leave</td>
+                            <td class="text-end">{{ result.sick_leave }} days</td>
+                        </tr>
+                        <tr class="table-primary">
+                            <td><strong>Total Annual Leave Entitlement</strong></td>
+                            <td class="text-end"><strong>{{ result.total_annual_leave }} days</strong></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="mt-3">
+                    <a href="/download/leave/pdf?days_worked={{ days_worked }}&state={{ state }}&establishment_type={{ establishment_type }}" class="btn btn-danger btn-sm">Download PDF Report</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6>Leave Rules</h6>
+                <ul class="small">
+                    <li><strong>Earned Leave:</strong> 1 day for every 20 days worked (Factories Act)</li>
+                    <li><strong>Casual Leave:</strong> Typically 7-12 days per year</li>
+                    <li><strong>Sick Leave:</strong> Usually 7-12 days per year</li>
+                    <li>Rules may vary by state and establishment type</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

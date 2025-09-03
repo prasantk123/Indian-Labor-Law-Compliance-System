@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="text-center mb-4">Indian Labor Law Compliance System</h1>
+        <p class="lead text-center">Calculate statutory benefits and check compliance requirements</p>
+        <p class="text-center text-muted">A useful utility developed by <strong>Prasant Kumar</strong></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Gratuity Calculator</h5>
+                <p class="card-text">Calculate gratuity amount as per Payment of Gratuity Act, 1972</p>
+                <a href="/gratuity" class="btn btn-primary">Calculate Gratuity</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">PF Calculator</h5>
+                <p class="card-text">Calculate Provident Fund contributions for employees and employers</p>
+                <a href="/pf" class="btn btn-primary">Calculate PF</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">ESI Calculator</h5>
+                <p class="card-text">Check ESI eligibility and calculate contributions</p>
+                <a href="/esi" class="btn btn-primary">Check ESI</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Leave Calculator</h5>
+                <p class="card-text">Calculate leave entitlements as per labor laws</p>
+                <a href="/leave" class="btn btn-primary">Calculate Leave</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Compliance Checker</h5>
+                <p class="card-text">Generate compliance checklist for your establishment</p>
+                <a href="/compliance" class="btn btn-primary">Check Compliance</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

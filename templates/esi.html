@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}ESI Calculator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h2>ESI Calculator</h2>
+        <p class="text-muted">Check ESI eligibility and calculate contributions</p>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="salary" class="form-label">Monthly Salary *</label>
+                        <input type="number" class="form-control" id="salary" name="salary" 
+                               value="{{ salary or '' }}" required step="0.01" min="0">
+                        <div class="form-text">Total monthly salary including all allowances</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="state" class="form-label">State</label>
+                        <select class="form-select" id="state" name="state">
+                            <option value="general" {{ 'selected' if state == 'general' }}>General</option>
+                            <option value="maharashtra" {{ 'selected' if state == 'maharashtra' }}>Maharashtra</option>
+                            <option value="karnataka" {{ 'selected' if state == 'karnataka' }}>Karnataka</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Check ESI Eligibility</button>
+                </form>
+            </div>
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-danger mt-3">{{ error }}</div>
+        {% endif %}
+        
+        {% if result %}
+        <div class="card result-card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">ESI Eligibility Result</h5>
+                
+                {% if result.eligible %}
+                <div class="alert alert-success">
+                    <h6>✓ Eligible for ESI</h6>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Employee Contribution</h6>
+                                <h4 class="text-primary">₹{{ "{:,.2f}".format(result.employee_contribution) }}</h4>
+                                <small class="text-muted">0.75% of salary</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Employer Contribution</h6>
+                                <h4 class="text-success">₹{{ "{:,.2f}".format(result.employer_contribution) }}</h4>
+                                <small class="text-muted">3.25% of salary</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Monthly Salary</td>
+                            <td class="text-end">₹{{ "{:,.2f}".format(salary) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Employee ESI (0.75%)</td>
+                            <td class="text-end">₹{{ "{:,.2f}".format(result.employee_contribution) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Employer ESI (3.25%)</td>
+                            <td class="text-end">₹{{ "{:,.2f}".format(result.employer_contribution) }}</td>
+                        </tr>
+                        <tr class="table-primary">
+                            <td><strong>Total ESI Contribution</strong></td>
+                            <td class="text-end"><strong>₹{{ "{:,.2f}".format(result.total_contribution) }}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <h6>✗ Not Eligible for ESI</h6>
+                    <p>{{ result.reason }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="mt-3">
+                    <a href="/download/esi/pdf?salary={{ salary }}&state={{ state }}" class="btn btn-danger btn-sm">Download PDF Report</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6>About ESI</h6>
+                <ul class="small">
+                    <li>ESI wage limit: ₹21,000 per month (as of 2022)</li>
+                    <li>Employee contribution: 0.75% of salary</li>
+                    <li>Employer contribution: 3.25% of salary</li>
+                    <li>Provides medical benefits to employees and dependents</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
